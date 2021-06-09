@@ -3,43 +3,88 @@
 
 
 * [June 2017: WES QC Process (last updated June 2017)](#wes-qc-process)
-   1. [Files](#files)
-   2. [QC comparisons](#qc-comparisons)
+   1. [Repository Description](#repository-description)
+   2. [QC comparison_list](#qc-comparison-list)
    3. [Sample QC Parameters](#sample-qc-parameters)
    4. [Variant QC Parameters](#variant-qc-parameters)
    5. [QC pipeline steps](#qc-pipeline-steps)
-* [QC pipeline examples](#qc-pipeline-examples)
 
+\
+\
+\
+\. 
 
-## QC comparisons
+## Repository description
+
+__This repo provides a template for processing WGS data in Hail__
+  * __README__: Considerations of WGS data and QC pipeline steps
+  * __Resources__: Links and other things relevant to WGS pipelines
+  * __Modules__: Hail script templates for each pipeline step
+
+## WGS considerations
+
+__File size:__
+  * WGS data is orders of magnitdues larger than GWAS array (fixed variant size) and exome capture sequencing (~1% of genome)
+  * File size will scale with sample size
+  * Strategies to deal with large files:
+  	* Use Hail
+  	* [Re-partitioning](https://hail.is/docs/0.2/hail.MatrixTable.html#hail.MatrixTable.repartition) the Hail matrix table
+  	* Use a [Sparse matrix table](https://hail.is/docs/0.2/experimental/vcf_combiner.html#working-with-sparse-matrix-tables) 
+
+__File formats:__
+  * Per-sample gVCFs: VCF format data for each sample, where all variant sites and reference blocks are listed for all contigs
+  * Ref-blocks: Summary depth/genotype quality information in the gVCF across a genomic interval where the sample has no variant sites
+
+__Common and rare variation:__
+  * WGS data contains SNP/indel calls across the allele frequency spectrum, whereas array (MAF > 0.1%)
+  * Low coverage WGS (< 10x) aided by imputation
+  * High coverage WGS (> 20x) robust across all SNP/indels
+  * Multiple levels of analysis
+  	* Pulling out common variants to include in GWAS meta-analysis (GWAMA)
+  	* Pulling out rare coding variants to include in Exome meta-analysis
+  	* Looking at rare non-coding variation (good luck!)
+
+__Repetitive regions:__
+  * WGS contains challenging genomic regions often ignored in array and exome capture sequencing
+  * Regions with highly repetitive sequence that is difficult for short read sequening to align properly to the reference genome library
+  	* Telomeres/centromeres of each chromosome
+  	* Segmental duplications - large repetitive chumks
+  	* Low complexity regions (LCRs)
+  * These regions are often excluded early on in an analysis
+
+\
+\
+\
+\. 
+
+## QC comparison list
+
+Description: These are a short list of common metrics / covariates investigated in sequencing data analysis
 
 **Categorical Groupings**
   * Cohorts/waves
-  * C-Project
-  * Capture platform
+  * C-Project (Broad specific)
   * Sex
   * Affection status
   * Project specific categories
 
 **Quantitative parameters**
-  * Top Principal components
-  * % Coverage (callRate)
-  * Mean Depth (dpMean)
-  * Singleton Synonymous rate (nSingleton when restricting to synonymous variants)
-  * Non-ExAC / non-discovEHR singleton rate
-        * 92k ExAC/GnomAD sites with Psych-exomes and MiGEN removed: `gs://exome-qc/resources/gnomad.r2.0.1/gnomad.r2.0.1.nonpsych.variants.tsv`
-	* discovEHR sites `/humgen/atgu1/fs03/shared_resources/discovEHR/GHS_Freeze_50.L3DP10.pVCF.frq.hail.vcf`
-	* ExAC sites `/humgen/atgu1/fs03/shared_resources/ExAC/release0.3.1/ExAC.r0.3.1.sites.vep.vcf.gz`
-	* Non-Psych ExAC sites `ftp://ftp.broadinstitute.org/distribution/ExAC_release/release1/subsets/ExAC_nonpsych.r1.sites.vep.vcf.gz`
+  * Top genetic principal components
+	* Continental ancestry groupings
+  * Number of variant sites (n_snps)
+  * Singleton rate (n_singleton)
+  * Het / hom variant ratio (r_het_hom_var)
 
+\
+\
+\
+\. 
 
 ## Sample QC Parameters
 
 **From GATK/Picard metadata**
   * Freemix Contamination
   * Chimeric read percentage
-  * PCT_TARGET_BASES_10X
-  * PCT_TARGET_BASES_20X
 
 **From Hail Sample QC Annotation Table**
 **Primary QC parameters** 
@@ -66,6 +111,10 @@
   * gqStDev
   * nNonRef
 
+\
+\
+\
+\. 
 
 ## Variant QC Parameters
 
@@ -82,34 +131,43 @@
   * Genotype Quality (GQ - same as PL in joint-called VCF)
   * Allele Depth (AD)
 
+\
+\
+\
+\. 
 
 ## QC pipeline steps
 
 1. **Dataset QC prior to menipulating VCF**
 	* **GOAL: Understanding the project/phenotype data you are working with**
 	* List and understand all sample phenotypes provided
-	* Match up phenotype file IDs with VCF IDs
+	* Match up phenotype file IDs with genetic data IDs
 		* Resolve any inconsistencies before moving forward
 	* Start spreadsheet/table of datasets, capture platforms
 		* Split data up into category with the most designations 
 	* Write up paragraph of sample collection and descriptives
-  * Know what genome reference your sequence data is mapped
+  * Know what genome reference your sequence data is mapped (most WGS data is hg38 / GRCh38)
+  * Determine whether you are using a dense or sparse matrix table
   * Look over the VCF meta-data at the top of the VCF file
 	* Read VCF and phenotype/sample file into Hail
   * Generate sample QC metrics from raw VCF
 
-2. **Variant QC pre-filtering**
+2. **Dataset pre-filtering**
 	* **GOAL: Remove variants that are highly unlikely to be analyzed**
     * Remove variants that fail VQSR
     * Remove variants in telomeres / centromeres
     * Remove variants in low-complexity regions
+    * Remove variants in segmental duplication regions
     * Generate sample QC metrics from pre-filtered VCF
-	  * VEP annotation    
+    * VEP annotate remaining sites    
 
-3. Creating a high quality hard call subset of the data
-  * **GOAL: Use a smaller subset of variants to analyze relatedness and population ancestry**
-  
-  ........work from here
+3. **High quality hard call subset of the data**
+  * **GOAL: Use a smaller subset of variants (i.e. 50-100k variants) to analyze relatedness and population ancestry**
+    * Bi-allelic sites only
+    * Common variants (MAF > 0.1%)
+    * Call rate > 99%
+    * LD-pruned with a cutoff of r2 = 0.1  
+
 
 2. **Outlier sample QC: part 1**
 	* **GOAL: Remove samples that are contaminated or have poor sequencing levels**
@@ -210,28 +268,6 @@
 
 
 
-## QC pipeline examples
-
-**Andrea Ganna's steps for running QC and analysis in WGS data:**
-
-[Analysis Plan](https://storage.googleapis.com/wgspd-wgs-v1-noshared/Analysis_plan_METSIM.md.html)
-
-Includes:
- - Normalizing phenotypes
- - pyhail quality control
- - VEP annotation
- - Score generation
- - Association analysis
-
-[WGSPD](https://storage.googleapis.com/wgspd-wgs-v1/wgspd_guide_shared.html)
-
-Includes:
- - Data structure on the cloud
- - Downloading files/data from the cloud
- - Running Hail on the cloud
- - QC filtering
- - Generating PCs
- - Annotation 
 
 
 
@@ -241,16 +277,14 @@ Includes:
 
 
 
-
-
-# Case/control Whole Exome Sequencing - Burden and Association pipeline
+# Case/control Whole Genome Sequencing - Burden and Association pipeline
 
 Basic Requirements:
  
- * A QC-ready annotated VCF/VDS or set of VCF/VDS files
+ * A QC-ready annotated matrix table
  * Samples annotated with PCs
 
-## Whole Exome Burden
+## Whole Genome Burden
 
 Primary Hypotheses:
 
