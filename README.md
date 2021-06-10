@@ -1,18 +1,15 @@
-# whole_genome_analysis_pipeline
+# Whole genome analysis pipeline
 
 
+## Sections
 
-* [June 2017: WES QC Process (last updated June 2017)](#wes-qc-process)
    1. [Repository Description](#repository-description)
-   2. [QC comparison_list](#qc-comparison-list)
+   2. [WGS considerations](#wgs-considerations)
    3. [Sample QC Parameters](#sample-qc-parameters)
    4. [Variant QC Parameters](#variant-qc-parameters)
    5. [QC pipeline steps](#qc-pipeline-steps)
 
-\
-\
-\
-\. 
+<br/><br/><br/>
 
 ## Repository description
 
@@ -21,13 +18,20 @@ __This repo provides a template for processing WGS data in Hail__
   * __Resources__: Links and other things relevant to WGS pipelines
   * __Modules__: Hail script templates for each pipeline step
 
+Inspired by gnomAD blog posts:
+  * [gnomAD v2.1](https://macarthurlab.org/2018/10/17/gnomad-v2-1/)
+  * [gnomAD v3.0](https://macarthurlab.org/2019/10/16/gnomad-v3-0/)
+
+<br/><br/><br/>
+
 ## WGS considerations
 
 __File size:__
   * WGS data is orders of magnitdues larger than GWAS array (fixed variant size) and exome capture sequencing (~1% of genome)
   * File size will scale with sample size
   * Strategies to deal with large files:
-  	* Use Hail
+  	* Use [Hail](https://hail.is/)
+  	* Run everything on the [cloud](https://sites.google.com/a/broadinstitute.org/atgu/google-cloud-platform-start-up)
   	* [Re-partitioning](https://hail.is/docs/0.2/hail.MatrixTable.html#hail.MatrixTable.repartition) the Hail matrix table
   	* Use a [Sparse matrix table](https://hail.is/docs/0.2/experimental/vcf_combiner.html#working-with-sparse-matrix-tables) 
 
@@ -52,33 +56,7 @@ __Repetitive regions:__
   	* Low complexity regions (LCRs)
   * These regions are often excluded early on in an analysis
 
-\
-\
-\
-\. 
-
-## QC comparison list
-
-Description: These are a short list of common metrics / covariates investigated in sequencing data analysis
-
-**Categorical Groupings**
-  * Cohorts/waves
-  * C-Project (Broad specific)
-  * Sex
-  * Affection status
-  * Project specific categories
-
-**Quantitative parameters**
-  * Top genetic principal components
-	* Continental ancestry groupings
-  * Number of variant sites (n_snps)
-  * Singleton rate (n_singleton)
-  * Het / hom variant ratio (r_het_hom_var)
-
-\
-\
-\
-\. 
+<br/><br/><br/>
 
 ## Sample QC Parameters
 
@@ -111,10 +89,7 @@ Description: These are a short list of common metrics / covariates investigated 
   * gqStDev
   * nNonRef
 
-\
-\
-\
-\. 
+<br/><br/><br/>
 
 ## Variant QC Parameters
 
@@ -131,35 +106,51 @@ Description: These are a short list of common metrics / covariates investigated 
   * Genotype Quality (GQ - same as PL in joint-called VCF)
   * Allele Depth (AD)
 
-\
-\
-\
-\. 
+<br/><br/><br/>
 
 ## QC pipeline steps
 
-1. **Dataset QC prior to menipulating VCF**
-	* **GOAL: Understanding the project/phenotype data you are working with**
-	* List and understand all sample phenotypes provided
-	* Match up phenotype file IDs with genetic data IDs
-		* Resolve any inconsistencies before moving forward
-	* Start spreadsheet/table of datasets, capture platforms
-		* Split data up into category with the most designations 
-	* Write up paragraph of sample collection and descriptives
-  * Know what genome reference your sequence data is mapped (most WGS data is hg38 / GRCh38)
-  * Determine whether you are using a dense or sparse matrix table
-  * Look over the VCF meta-data at the top of the VCF file
+1. **Dataset QC prior to manipulating VCF**
+  * **GOAL: Understanding the project/phenotype data you are working with**
+    * List and understand all sample phenotypes provided
+    * Match up phenotype file IDs with genetic data IDs
+	* Resolve any inconsistencies before moving forward
+    * Start spreadsheet/table of datasets, sequence platforms 
+    * Know what genome reference your sequence data is mapped (most WGS data is hg38 / GRCh38)
+    * Determine whether you are using a dense or sparse matrix table
+    * Look over the VCF meta-data at the top of the VCF file
 	* Read VCF and phenotype/sample file into Hail
-  * Generate sample QC metrics from raw VCF
+    * Generate sample QC metrics from raw VCF
+    * Write up paragraph of sample collection and descriptives
+
+**Categorical variables often analyzed in datasets**
+  * Cohort
+  * Sequencing wave
+  * C-Project (Broad specific)
+  * Sequencing Plate
+  * Sex
+  * Affection status
+  * Continental ancestry groupings / reported ancestry
+ 
+**Quantitative parameters often analyzed in datasets**
+  * Age
+  * Top genetic principal components
+  * Number of variant sites (n_snps)
+  * Singleton rate (n_singleton)
+  * Het / hom variant ratio (r_het_hom_var)
+
+<br/><br/>
 
 2. **Dataset pre-filtering**
-	* **GOAL: Remove variants that are highly unlikely to be analyzed**
+    * **GOAL: Remove variants that are highly unlikely to be analyzed**
     * Remove variants that fail VQSR
     * Remove variants in telomeres / centromeres
     * Remove variants in low-complexity regions
     * Remove variants in segmental duplication regions
     * Generate sample QC metrics from pre-filtered VCF
     * VEP annotate remaining sites    
+
+<br/><br/>
 
 3. **High quality hard call subset of the data**
   * **GOAL: Use a smaller subset of variants (i.e. 50-100k variants) to analyze relatedness and population ancestry**
@@ -168,35 +159,41 @@ Description: These are a short list of common metrics / covariates investigated 
     * Call rate > 99%
     * LD-pruned with a cutoff of r2 = 0.1  
 
+<br/><br/>
 
-2. **Outlier sample QC: part 1**
-	* **GOAL: Remove samples that are contaminated or have poor sequencing levels**
-	* Use pre-filtered VCF
-	* Plot values below before using DEFAULT filters to ensure you are not throwing away large amounts of samples
-    * freemix contamination filtering (DEFAULT > 5%)
-    * Chimeric read filtering (DEFAULT > 1.4% )
-    * Call rate filtering (DEFAULT < 90%)
-    * Mean Depth coverage filtering (DEFAULT < 20)
+4. **Outlier sample QC: part 1**
+    * **GOAL: Remove samples that are contaminated or have poor sequencing levels**
+    * Use pre-filtered dataset
+    * Plot values below before using DEFAULT filters to ensure you are not throwing away large amounts of samples
+      * freemix contamination filtering (DEFAULT > 0.05)
+      * Chimeric read filtering (DEFAULT > 0.05 )
+      * Call rate filtering (DEFAULT < 0.85)
+      * Mean Depth coverage filtering (DEFAULT < 15)
+      * Small insert size: Median insert size < 250bp
 
-3. **Sex check**
-	* **GOAL: remove samples where genotype sex does not equal reported sex**
-	* Filter out variants within PAR coordinates (https://en.wikipedia.org/wiki/Pseudoautosomal_region)
-	* Reported males shoud have X chromosome F-statistic from 0.8 to 1
-	* Reported females shoud have X chromosome F-statistic from -0.2 to 0.4
-    * Remove samples with ambiguous imputed sex (X chromosome inbreeding coefficient between 0.4 and 0.8)
-	* Large-scale sex check errors are indicative of ID mismatching or upstream data mishandling
+<br/><br/>
 
-4. **Principal components analysis**
-	* **GOAL: Determine general ancestry of cohort**
-	* Use raw VCF (so as not to exclude any common variants)
-	* Subset to common variant VCF (use 9k set: pruned_9k_common_variants_t.bim or generate your own)
-    * Run Hail PCA with 1K Genomes samples
+5. **Sex check sample QC**
+    * **GOAL: remove samples where genotype sex does not equal reported sex**
+    * Filter out variants within PAR coordinates (https://en.wikipedia.org/wiki/Pseudoautosomal_region)
+      * Reported males shoud have X chromosome F-statistic from 0.8 to 1
+      * Reported females shoud have X chromosome F-statistic from -0.2 to 0.4
+      * Remove samples with ambiguous imputed sex (X chromosome F-statistic between 0.4 and 0.8)
+    * Large-scale sex check errors are indicative of ID mismatching or upstream data mishandling
+
+<br/><br/>
+
+6. **Principal components analysis**
+    * **GOAL: Determine general ancestry of cohort**
+    * Use HQ hardcall dataset
+    * Run Hail PC-relate with 1K Genomes samples
     * Create plots of PCs
 	    * Case / control coloring
 	    * Cohort coloring
-	* Assigning samples to a particular ancestry
-		* Random forest approach (used by TJ Singh)
-		* SNPWEIGHTS: https://www.hsph.harvard.edu/alkes-price/software/ (used by Chia-Yen Chen)
+    * Assigning samples to a particular ancestry
+      * Random forest approach
+
+<br/><br/>
 
 5. **Outlier sample QC: part 2**
  	* **GOAL: remove samples within cohort that have unusual variant properties**
@@ -209,6 +206,8 @@ Description: These are a short list of common metrics / covariates investigated 
 		* Different ancestries have significant mean differences in these ratios
 	* Filter out within cohort outliers (DEFAULT > 4 Std. deviations within a particular ancestry)
 
+<br/><br/>
+
 6. **Principal components filtering**
     * **GOAL: match case and controls within a common genetic ancestry**
 	* Run Hail PCA without 1K Genomes samples 
@@ -220,11 +219,15 @@ Description: These are a short list of common metrics / covariates investigated 
 		* Re-evaluate PC dispersion  
 		* Add these PCs as covariates to phenotype file
 
+<br/><br/>
+
 7. **Identity-by-descent (IBD) filtering**
     * **GOAL: remove 1st and 2nd degree relatives from population based sample**
     * Within each ancestry group, calculate IBD using common variant VDS
     * Plot proportion of 0 shared and 1 shared alleles
     * IBD filtering on PI-HAT value (DEFAULT > 0.2)
+
+<br/><br/>
 
 8. **Variant QC**
 	* **GOAL: Remove low quality/somatic variants**
@@ -242,6 +245,8 @@ Description: These are a short list of common metrics / covariates investigated 
     * Remove variants not in HWE (DEFAULT p < 1e-6)
     * Generate sample QC metrics from variant-QC'ed VCF
 
+<br/><br/>
+
 9. **Assessing variant QC**
     * **GOAL: Determine if more stringent variant QC is needed**
     * Examine QC parameters across 3 filtering steps:
@@ -258,6 +263,8 @@ Description: These are a short list of common metrics / covariates investigated 
 		* Case/control (should be equal between groups)
 		* Cohort (should vary predictably)
 	* Determine whether additional variant filtering needs to be done
+
+<br/><br/>
 
 10. **Final sample QC**
 	* **GOAL: See if any samples are outliers after variant QC**
