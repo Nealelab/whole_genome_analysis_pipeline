@@ -7,7 +7,7 @@
    2. [WGS considerations](#wgs-considerations)
    3. [Sample QC Parameters](#sample-qc-parameters)
    4. [Variant QC Parameters](#variant-qc-parameters)
-   5. [QC pipeline steps](#qc-pipeline-steps)
+   5. [QC pipeline steps](#qc-pipeline-steps) 
 
 <br/><br/><br/>
 
@@ -110,6 +110,23 @@ __Repetitive regions:__
 
 ## QC pipeline steps
 
+### Index of steps:
+
+1. **Dataset QC prior to manipulating VCF**
+2. **Dataset pre-filtering**
+3. **High quality hard call subset of the data**
+4. **Outlier sample QC: part 1**
+5. **Sex check sample QC**
+6. **Identity-by-descent (IBD) filtering**
+7. **Principal components analysis**
+8. **Principal components filtering**
+9. **Outlier sample QC: part 2**
+10. **Variant QC**
+11. **Assessing variant QC**
+
+<br/><br/>
+
+
 1. **Dataset QC prior to manipulating VCF**
   * **GOAL: Understanding the project/phenotype data you are working with**
     * List and understand all sample phenotypes provided
@@ -143,7 +160,7 @@ __Repetitive regions:__
 
 2. **Dataset pre-filtering**
   * **GOAL: Remove variants that are highly unlikely to be analyzed**
-    * Remove variants that fail VQSR
+    * Remove variants that fail VQSR (or AS-VQSR)
     * Remove variants in telomeres / centromeres
     * Remove variants in low-complexity regions
     * Remove variants in segmental duplication regions
@@ -153,7 +170,7 @@ __Repetitive regions:__
 <br/><br/>
 
 3. **High quality hard call subset of the data**
-  * **GOAL: Use a smaller subset of variants (i.e. 50-100k variants) to analyze relatedness and population ancestry**
+  * **GOAL: Use a smaller subset of variants (i.e. 50-500k variants) to analyze relatedness and population ancestry**
     * Bi-allelic sites only
     * Common variants (MAF > 0.1%)
     * Call rate > 99%
@@ -186,8 +203,10 @@ __Repetitive regions:__
 6. **Identity-by-descent (IBD) filtering**
   * **GOAL: remove 1st and 2nd degree relatives from population based sample**
     * Use HQ hardcall dataset
-    * Determine genetic relatedness using Hail [pc-relate](https://hail.is/docs/0.2/methods/relatedness.html#hail.methods.pc_relate)
-    * Plot proportion of 0 shared and 1 shared alleles
+    * Consider which IBD algorithm to use ([KING](https://pubmed.ncbi.nlm.nih.gov/20926424/), [PC-AiR](https://pubmed.ncbi.nlm.nih.gov/25810074/), [PC-relate](https://www.rdocumentation.org/packages/GENESIS/versions/2.2.2/topics/pcrelate))
+    * Which algorithm you use will depend on sample size, ancestry composition, and knowledge of family pedigrees in data
+    * Unsure? Start by trying genetic relatedness using Hail [pc-relate](https://hail.is/docs/0.2/methods/relatedness.html#hail.methods.pc_relate)
+    * Plot proportion of 0 shared vs 1 shared alleles
     * IBD filtering on PI-HAT value (DEFAULT > 0.2)
 
 <br/><br/>
@@ -195,13 +214,17 @@ __Repetitive regions:__
 7. **Principal components analysis**
   * **GOAL: Determine general ancestry of cohort**
     * Use HQ hardcall dataset
-    * Run Hail [hwe_normalized_pca](https://hail.is/docs/0.2/methods/genetics.html#hail.methods.hwe_normalized_pca)
+    * Consider which PCA strategy to use
+      * PCA comparing against self-identified ancestry information (PROS: easy if you have this info CONS: dependent on quality of self-id info) 
+      * PCA including reference datasets with known ancestry (PROS: good truth dataset CONS: can be hard to harmonize variants)
+      * PCA using gnomAD PCs (PROS: no need to merge variants CONS: shrinkage in PCs due to variant mismatch
+    * Unsure? Start with Hail [hwe_normalized_pca](https://hail.is/docs/0.2/methods/genetics.html#hail.methods.hwe_normalized_pca)
     * Run with and without reference panel data (1KG or 1KG+HGDP genome reference panel)
     * Create plots of PCs
       * Case / control coloring
       * Cohort coloring
     * Assigning samples to a particular ancestry
-      * Random forest model
+      * [Random forest model](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html)
 
 <br/><br/>
 
