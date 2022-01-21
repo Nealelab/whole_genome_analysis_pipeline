@@ -133,10 +133,14 @@ __Repetitive regions:__
 
 ### High quality hard call subset of the data
   * **GOAL: Use a smaller subset of variants (i.e. 50-500k variants) to analyze relatedness and population ancestry**
-    * Bi-allelic sites only
+    * Bi-allelic SNVs only
     * Common variants (MAF > 0.1%)
     * Call rate > 99%
     * LD-pruned with a cutoff of r2 = 0.1  
+  * If running from raw VCF calls
+    * Run split.multi to maximize bi-allelic sites
+    * Filter to PASS sites and SNV 
+    * Run variant.qc to get MAF
 
 <br/><br/>
 
