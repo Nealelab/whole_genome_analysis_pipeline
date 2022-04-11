@@ -23,6 +23,13 @@
 
 <br/><br/><br/>
 
+![WGS QC workflow chart](https://user-images.githubusercontent.com/12957566/162833389-2f10bc49-4c38-4a73-9106-461e24dc1ad2.png)
+
+![WGS QC workflow chart sample QC](https://user-images.githubusercontent.com/12957566/162833666-3c1e46af-cebb-4420-b9c0-831a0ac82b49.png)
+
+![WGS QC workflow chart variant QC](https://user-images.githubusercontent.com/12957566/162833702-19183cdc-f275-4ff6-bd2e-f5fd36c962b8.png)
+
+
 ## Repository description
 
 __This repo provides a template for processing WGS data in Hail__
@@ -30,7 +37,7 @@ __This repo provides a template for processing WGS data in Hail__
   * __Resources__: Links and other things relevant to WGS pipelines
   * __Modules__: Hail script templates for each pipeline step
 
-Inspired by gnomAD blog posts:
+Relevant gnomAD blog posts:
   * [gnomAD v2.1](https://macarthurlab.org/2018/10/17/gnomad-v2-1/)
   * [gnomAD v3.0](https://macarthurlab.org/2019/10/16/gnomad-v3-0/)
 
@@ -45,7 +52,8 @@ __File size:__
   	* Use [Hail](https://hail.is/)
   	* Run everything on the [cloud](https://sites.google.com/a/broadinstitute.org/atgu/google-cloud-platform-start-up)
   	* [Re-partitioning](https://hail.is/docs/0.2/hail.MatrixTable.html#hail.MatrixTable.repartition) the Hail matrix table
-  	* Use a [Sparse matrix table](https://hail.is/docs/0.2/experimental/vcf_combiner.html#working-with-sparse-matrix-tables) 
+  	* Use a [Sparse matrix table](https://hail.is/docs/0.2/experimental/vcf_combiner.html#working-with-sparse-matrix-tables)
+  	* Use a hail VDS (variant dataset), which retains [only non-ref calls](https://hail.is/docs/0.2/vds/hail.vds.VariantDataset.html) 
 
 __File formats:__
   * Per-sample gVCFs: VCF format data for each sample, where all variant sites and reference blocks are listed for all contigs
@@ -71,6 +79,7 @@ __Repetitive regions:__
 <br/><br/><br/>
 
 ## QC pipeline steps
+
 
 ### Index of steps:
 
