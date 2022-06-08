@@ -136,7 +136,8 @@ __Repetitive regions:__
     * Remove variants in low-complexity regions
     * Remove variants in segmental duplication regions
     * Generate sample QC metrics from pre-filtered VCF
-    * VEP annotate remaining sites    
+    * VEP annotate remaining sites
+      * Usually just need gene name and consequence 	    
 
 <br/><br/>
 
