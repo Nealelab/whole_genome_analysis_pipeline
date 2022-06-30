@@ -37,7 +37,9 @@ __This repo provides a template for processing WGS data in Hail__
   * __Resources__: Links and other things relevant to WGS pipelines
   * __Modules__: Hail script templates for each pipeline step
 
-Relevant gnomAD blog posts:
+Relevant gnomAD resources:
+  * gnomAD resources: gs://gcp-public-data--gnomad/
+  * [gnomad readthedocs](https://broadinstitute.github.io/gnomad_methods/)
   * [gnomAD v2.1](https://macarthurlab.org/2018/10/17/gnomad-v2-1/)
   * [gnomAD v3.0](https://macarthurlab.org/2019/10/16/gnomad-v3-0/)
 
@@ -142,11 +144,15 @@ __Repetitive regions:__
 <br/><br/>
 
 ### High quality hard call subset of the data
-  * **GOAL: Use a smaller subset of variants (i.e. 50-500k variants) to analyze relatedness and population ancestry**
+  * **GOAL: Use a smaller subset of variants (i.e. 50-500k variants) to analyze relatedness (IBD) and population ancestry (PCA)**
     * Bi-allelic SNVs only
     * Common variants (MAF > 0.1%)
     * Call rate > 99%
-    * LD-pruned with a cutoff of r2 = 0.1  
+    * LD-pruned with a cutoff of r2 = 0.1
+  * PROTIP: Use gnomAD / CCDG hg38 PCA variant list
+    * HQ calls selected from large multi-ancestry WGS cohort
+    * 224,591 variants ld-pruned with gnomAD v3: `gs://gnomad/sample_qc/ht/genomes_v3.1/ld_pruned_combined_variants.ht`
+    * 259,482 variants pre-ld-pruning: `gs://gnomad/sample_qc/ht/genomes_v3.1/pre_ld_pruning_combined_variants_without_washu.ht`
   * If running from raw VCF calls
     * Run split.multi to maximize bi-allelic sites
     * Filter to PASS sites and SNV 
