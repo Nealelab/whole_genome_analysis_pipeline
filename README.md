@@ -55,7 +55,8 @@ __File size:__
   	* Run everything on the [cloud](https://sites.google.com/a/broadinstitute.org/atgu/google-cloud-platform-start-up)
   	* [Re-partitioning](https://hail.is/docs/0.2/hail.MatrixTable.html#hail.MatrixTable.repartition) the Hail matrix table
   	* Use a [Sparse matrix table](https://hail.is/docs/0.2/experimental/vcf_combiner.html#working-with-sparse-matrix-tables)
-  	* Use a hail VDS (variant dataset), which retains [only non-ref calls](https://hail.is/docs/0.2/vds/hail.vds.VariantDataset.html) 
+  	* Use a hail VDS (variant dataset), which retains [only non-ref calls](https://hail.is/docs/0.2/vds/hail.vds.VariantDataset.html)
+  * [GVS file format](https://docs.google.com/spreadsheets/d/1P_vf_TVGRGjkcMcFIu3OKWiiGDyaHncQ737WY_NIS5s/edit?pli=1#gid=0): Google Big Query solution to save space due to the size of the VCF.
 
 __File formats:__
   * Per-sample gVCFs: VCF format data for each sample, where all variant sites and reference blocks are listed for all contigs
