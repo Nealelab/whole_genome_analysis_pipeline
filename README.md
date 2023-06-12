@@ -43,6 +43,8 @@ Relevant gnomAD resources:
   * [gnomAD v2.1](https://macarthurlab.org/2018/10/17/gnomad-v2-1/)
   * [gnomAD v3.0](https://macarthurlab.org/2019/10/16/gnomad-v3-0/)
 
+[AllofUS QC report (Spring 2023)](https://support.researchallofus.org/hc/en-us/articles/4617899955092-All-of-Us-Genomic-Quality-Report-)
+
 <br/><br/><br/>
 
 ## WGS considerations
